@@ -24,7 +24,7 @@ end
 directory '/home/circle/.ssh' do
   owner 'circle'
   group 'circle'
-  mode '600'
+  mode '711'
 end
 
 cookbook_file '/home/circle/.ssh/authorized_keys' do
