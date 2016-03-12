@@ -110,7 +110,7 @@ execute 'nginx-proxy docker start' do
            --name nginx-proxy \
            --hostname nginx-proxy \
            -p 80:80 \
-           -p 443:443
+           -p 443:443 \
            jwilder/nginx-proxy"
   not_if 'docker ps -a | grep nginx-proxy'
 end
