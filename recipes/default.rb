@@ -80,14 +80,13 @@ end
 
 execute 'go get gb and goimport' do
   command "#{node['deploy']['user']['home']}/go/bin/go get github.com/constabulary/gb/... &&
-          #{node['deploy']['user']['home']}/go get golang.org/x/tools/cmd/goimports"
+          #{node['deploy']['user']['home']}/go/bin/go get golang.org/x/tools/cmd/goimports"
   creates "#{node['deploy']['user']['home']}/go/plugins/src/github.com/constabulary/gb"
 end
 
-link "#{node['deploy']['user']['home']}/go/bin/gb-vendor" do
-  to '/usr/local/bin/gb-vendor'
+link '/usr/local/bin/gb-vendor' do
+  to "#{node['deploy']['user']['home']}/go/bin/gb-vendor"
   link_type :symbolic
-  mode 755
 end
 
 
@@ -116,19 +115,6 @@ execute 'nginx-proxy docker start' do
   not_if 'docker ps -a | grep nginx-proxy'
 end
 
-execute 'docker create mongo volume' do
-  command "docker create volume --name mongo"
-  not_if 'docker volume ls | grep mongo'
-end
-
-execute 'mongo docker start' do
-  command "docker run -d \
-           -v mongo:/data/db \
-           --name mongo \
-           --hostname mongo \
-           mongo"
-  not_if 'docker ps -a | grep mongo'
-end
 
 node['git']['branchs'].each do |br|
   git "#{node['deploy']['user']['home']}/#{br}" do
@@ -142,18 +128,32 @@ node['git']['branchs'].each do |br|
     command "#{node['deploy']['user']['home']}/go/bin/gb vendor restore ./vendor/manifest &&
              #{node['deploy']['user']['home']}/go/bin/gb build"
     cwd "#{node['deploy']['user']['home']}/#{br}"
+    creates "#{node['deploy']['user']['home']}/#{br}/vendor/src"
+  end
+
+  execute "docker create #{br} mongo volume" do
+    command "docker volume create --name #{br}-mongo"
+    not_if "docker volume ls | grep #{br}-mongo"
+  end
+  
+  execute "#{br} mongo docker start" do
+    command "docker run -d \
+             -v #{br}-mongo:/data/db \
+             --name #{br}-mongo \
+             --hostname #{br}-api-server \
+             --expose 80 \
+             mongo"
+    not_if "docker ps -a | grep #{br}-mongo"
   end
 
   execute "#{br} docker start" do
     command "docker run -d -t \
              -v #{node['deploy']['user']['home']}/#{br}:/go/src \
-             --net container:mongo \
-             --ipc container:mongo \
+             --net container:#{br}-mongo \
+             --ipc container:#{br}-mongo \
              --name #{br}-score-api-server \
-             --hostname #{br}-score-api-server \
-             --expose 80 \
              golang:latest \
-             bash -c /go/src/bin/3aClassic"
+             bash -c /go/src/bin/3aClassic-linux-amd64"
     not_if "docker ps -a | grep #{br}-score-api-server"
   end
 end
