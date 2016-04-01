@@ -19,6 +19,12 @@ user node['deploy']['user']['name'] do
   shell node['deploy']['user']['shell']
 end
 
+directory "#{node['deploy']['user']['home']}" do
+  owner node['deploy']['user']['name']
+  group node['deploy']['user']['name']
+  mode '755'
+end
+
 directory "#{node['deploy']['user']['home']}/.ssh" do
   owner node['deploy']['user']['name']
   group node['deploy']['user']['name']
