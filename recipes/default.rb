@@ -146,8 +146,7 @@ node['git']['branchs'].each do |br|
     command "docker run -d \
              -v #{br}-mongo:/data/db \
              --name #{br}-mongo \
-             --hostname #{br}-api-server \
-             --expose 80 \
+             --hostname #{br}-mongo \
              mongo"
     not_if "docker ps -a | grep #{br}-mongo"
   end
