@@ -110,7 +110,7 @@ cookbook_file "#{node['deploy']['user']['home']}/nginx-proxy-vhost.d/default_loc
 end
 
 execute 'nginx-proxy docker start' do
-  command "service docker start && docker run -d -t \
+  command "docker run -d -t \
            -v /var/run/docker.sock:/tmp/docker.sock:ro \
            -v #{node['deploy']['user']['home']}/nginx-proxy-vhost.d:/etc/nginx/vhost.d/ \
            --name nginx-proxy \
