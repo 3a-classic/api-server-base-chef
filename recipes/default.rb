@@ -13,7 +13,7 @@ node['package']['names'].each do |pac|
 end
 
 user node['deploy']['user']['name'] do
-  comment 'circleci user'
+  comment "#{node['deploy']['user']['name']} user"
   uid node['deploy']['user']['id']
   home node['deploy']['user']['home']
   shell node['deploy']['user']['shell']
